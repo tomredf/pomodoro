@@ -7,11 +7,22 @@ RED = "#e7305b"
 GREEN = "#9bdeac"
 YELLOW = "#f7f5dd"
 FONT_NAME = "Courier"
-WORK_MIN = 1
-SHORT_BREAK_MIN = 1
-LONG_BREAK_MIN = 1
+WORK_MIN = 25
+SHORT_BREAK_MIN = 5
+LONG_BREAK_MIN = 20
 reps = 0
+timer = None
+
 # ---------------------------- TIMER RESET ------------------------------- # 
+
+
+def reset_timer():
+    window.after_cancel(timer)
+    title_label.config(text="Timer", fg=GREEN)
+    canvas.itemconfig(timer_text, text="00:00")
+    progress_label.config(text="")
+    global reps
+    reps = 0
 
 
 # ---------------------------- TIMER MECHANISM ------------------------------- #
@@ -26,10 +37,10 @@ def start_timer():
         title_label.config(text="Break", fg=RED)
     elif reps % 2 > 0:
         count_secs = WORK_MIN
-        title_label.config(text="Work", fg=PINK)
+        title_label.config(text="Work", fg=GREEN)
     else:
         count_secs = SHORT_BREAK_MIN
-        title_label.config(text="Break", fg=YELLOW)
+        title_label.config(text="Break", fg=PINK)
     count_down(count_secs * 60)
 
 # ---------------------------- COUNTDOWN MECHANISM ------------------------------- #
@@ -45,9 +56,16 @@ def count_down(count):
     canvas.itemconfig(timer_text, text=f"{count_min}:{count_sec}")
 
     if count > 0:
-        window.after(1000, count_down, count - 1)
+        global timer
+        timer = window.after(1000, count_down, count - 1)
     else:
         start_timer()
+        marks = ""
+        work_sessions = math.floor(reps/2)
+        for _ in range(work_sessions):
+            marks += "✓️"
+            progress_label.config(text=marks)
+
 
 # ---------------------------- UI SETUP ------------------------------- #
 
@@ -69,10 +87,10 @@ canvas.grid(column=1, row=1)
 start_button = Button(text="Start", bg=YELLOW, highlightthickness=0, command=start_timer)
 start_button.grid(column=0, row=2)
 
-reset_button = Button(text="Reset", bg=YELLOW, highlightthickness=0)
+reset_button = Button(text="Reset", bg=YELLOW, highlightthickness=0, command=reset_timer)
 reset_button.grid(column=2, row=2)
 
-progress_label = Label(text="✓️", fg=GREEN, font=(FONT_NAME, 28, "bold"))
+progress_label = Label(fg=GREEN, font=(FONT_NAME, 35, "bold"))
 progress_label.grid(column=1, row=3)
 
 window.mainloop()
